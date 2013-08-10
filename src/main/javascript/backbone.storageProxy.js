@@ -18,36 +18,21 @@
 (function() {
     'use strict';
 
-    Backbone.StorageProxy = function()
+    Backbone.StorageProxy = function(modelOrCollection, storageAdapter)
     {
-
-    };
-
-    /**
-     * Construct a new storage proxy with the storage adapters
-     * passed.
-     *
-     * @param modelOrCollection Model or collection to override sync method
-     * @param storageAdapters Array of storage adapters
-     * @returns {Backbone.StorageProxy} Constructed storage proxy
-     */
-    Backbone.StorageProxy.factory = function(modelOrCollection, storageAdapters)
-    {
+        this.setStorageAdapter(storageAdapter);
         Backbone.StorageProxy.overrideSync(modelOrCollection);
-        var storageProxy = new Backbone.StorageProxy().setStorageAdapters(storageAdapters);
 
         // Register event handler to "add" event for collection
         // to override sync method for each model added to the collection.
         // Note that any potential storageProxy instance created within the
         // model is overwritten.
         if (modelOrCollection instanceof Backbone.Collection) {
-            modelOrCollection.on('add', function(model, collection, options) {
+            modelOrCollection.on('add', function(model) {
                 model.storageProxy = this;
                 Backbone.StorageProxy.overrideSync(model);
-            }, storageProxy);
+            }, this);
         }
-
-        return storageProxy;
     };
 
     /**
@@ -73,111 +58,40 @@
                     'or is not of type Backbone.StorageProxy.');
             }
 
-            // Call all storage adapters attached to the storage proxy
-            // and notify the callbacks with the appropriate responses
-            var storageAdapters = storageProxy.getStorageAdapters();
-            for(var i = 0; i < storageAdapters.length; i++) {
-                var args = [];
-                for (var x = 0; x < arguments.length; x++) {
-                    args.push(arguments[x]);
-                }
-                args.push(storageAdapters[i].adapter.sync.apply(storageAdapters[i].adapter, arguments));
-
-                if (storageAdapters[i].callback.apply(model, args) !== true) {
-                    // Short circuit any further storage adapter execution
-                    break;
-                }
-            }
+            // Call the storage adapter and return the result
+            var storageAdapter = storageProxy.getStorageAdapter();
+            return storageAdapter.sync.apply(storageAdapter, arguments);
         };
     };
 
     Backbone.StorageProxy.prototype = {
         /**
-         * List of storage adapters to forward sync calls to.
+         * Storage adapters to forward sync calls to.
          */
-        _storageAdapters: [],
+        _storageAdapter: null,
 
         /**
-         * Sets all the list of storage adapters to proxy to
-         * to the list provided.
+         * Set a storage adapter to the proxy.
          *
-         * @param storageAdapters Array of storage adapters
+         * @param storageAdapter Storage adapter
          * @return {Backbone.StorageProxy} this
          */
-        setStorageAdapters: function(storageAdapters) {
-            if (storageAdapters == null) {
-                this.reset();
-            } else {
-                // Validate storage adapter array
-                for (var i = 0; i < storageAdapters.length; i++) {
-                    if (storageAdapters[i].adapter == null) {
-                        throw new TypeError('Storage adapter at position ' + i + ' not defined.');
-                    } else if (storageAdapters[i].callback == null) {
-                        throw new TypeError('Storage adapter callback at position ' + i + ' not defined.');
-                    }
-                }
-
-                this._storageAdapters = storageAdapters;
-            }
-
-            return this;
-        },
-
-        /**
-         * Add a storage adapter to the proxy.
-         *
-         * @param storageAdapter Single storage adapter
-         * @param callback Callback to execute when storage adapter has completed
-         * @return {Backbone.StorageProxy} this
-         */
-        addStorageAdapter: function(storageAdapter, callback) {
+        setStorageAdapter: function(storageAdapter) {
             if (storageAdapter == null) {
                 throw new TypeError('Storage adapter not defined.');
-            } else if (callback == null) {
-                throw new TypeError('Storage adapter callback not defined.');
             }
 
-            this._storageAdapters.push({adapter: storageAdapter, callback: callback});
-
+            this._storageAdapter = storageAdapter;
             return this;
         },
 
         /**
-         * Get array of storage adapters.
+         * Get storage adapter.
          *
-         * @returns Array of storage adapters
+         * @returns Storage adapters
          */
-        getStorageAdapters: function() {
-            return this._storageAdapters;
-        }
-    };
-
-    /**
-     * Storage adapter for the Backbone.sync RESTful API implementation
-     *
-     * @constructor
-     */
-    Backbone.RestStorage = function() {
-
-    };
-
-    Backbone.RestStorage.prototype = {
-        /**
-         * Forward sync calls to the models original
-         * sync method and return results
-         *
-         * @param method
-         * @param model
-         * @param options
-         * @returns {*}
-         */
-        sync: function(method, model, options)
-        {
-            if (model.backboneSync == null) {
-                throw new TypeError('Backbone sync method model.backboneSync not found.');
-            }
-
-            return model.backboneSync(method, model, options);
+        getStorageAdapter: function() {
+            return this._storageAdapter;
         }
     };
 })();
