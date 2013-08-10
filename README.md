@@ -20,13 +20,13 @@ using the backbone initialize function. The object property used must be 'storag
 ```javascript
 var model = Backbone.Model.extend({
     initialize: function() {
-        this.storageProxy = Backbone.StorageProxy.factory(this, new Backbone.MyStorageAdapter())
+        this.storageProxy = new Backbone.StorageProxy(this, new Backbone.MyStorageAdapter())
     }
 });
 
 var collection = Backbone.Collection.extend({
     initialize: function() {
-        this.storageProxy = Backbone.StorageProxy.factory(this, new Backbone.MyStorageAdapter())
+        this.storageProxy = new Backbone.StorageProxy(this, new Backbone.MyStorageAdapter())
     }
 });
 ```
