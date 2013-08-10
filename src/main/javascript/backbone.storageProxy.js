@@ -138,4 +138,33 @@
             return this._storageAdapters;
         }
     };
+
+    /**
+     * Storage adapter for the Backbone.sync RESTful API implementation
+     *
+     * @constructor
+     */
+    Backbone.RestAdapter = function() {
+
+    };
+
+    Backbone.RestAdapter.prototype = {
+        /**
+         * Forward sync calls to the model or collections original
+         * sync method and return results
+         *
+         * @param method
+         * @param model
+         * @param options
+         * @returns {*}
+         */
+        sync: function(method, model, options)
+        {
+            if (model.backboneSync == null) {
+                throw new TypeError('Backbone sync method model.backboneSync not found.');
+            }
+
+            return model.backboneSync(method, model, options);
+        }
+    };
 })();
