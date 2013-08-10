@@ -51,7 +51,7 @@
             if (model.storageProxy && model.storageProxy instanceof Backbone.StorageProxy) {
                 storageProxy = model.storageProxy;
             } else if (model.collection && model.collection.storageProxy &&
-                model.collection.storageProx instanceof Backbone.StorageProxy) {
+                model.collection.storageProxy instanceof Backbone.StorageProxy) {
                 storageProxy = model.collection.storageProxy;
             } else {
                 throw new TypeError('Storage proxy not found or removed from model or collection, ' +
