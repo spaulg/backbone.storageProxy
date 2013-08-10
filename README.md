@@ -1,6 +1,6 @@
-# Backbone Storage Provider Proxy
+# Backbone Storage Adapter Proxy
 
-A proxy class for allowing multiple storage providers to be utilised on backbone.js
+A proxy class for allowing multiple storage adapters to be utilised on backbone.js
 models and collections at the same time.
 
 ## Usage
@@ -16,9 +16,9 @@ Register the storage proxy into each model and collection that requires it.
 ```javascript
 var model = Backbone.Model.extend({
     storageProxy: Backbone.StorageProxy.factory(this,
-        [{provider: new Backbone.MyStorageAdapter(),
+        [{adapter: new Backbone.MyStorageAdapter(),
             callback: myStorageAdapterCallback},
-        {provider: new Backbone.MyOtherStorageAdapter(),
+        {adapter: new Backbone.MyOtherStorageAdapter(),
             callback: myOtherStorageAdapterCallback}]
     ),
 
@@ -40,9 +40,9 @@ var model = Backbone.Model.extend({
 
 var collection = Backbone.Collection.extend({
     storageProxy: Backbone.StorageProxy.factory(this,
-        [{provider: new Backbone.MyStorageAdapter(),
+        [{adapter: new Backbone.MyStorageAdapter(),
             callback: myStorageAdapterCallback},
-        {provider: new Backbone.MyOtherStorageAdapter(),
+        {adapter: new Backbone.MyOtherStorageAdapter(),
             callback: myOtherStorageAdapterCallback}]
     ),
 
@@ -62,28 +62,28 @@ var collection = Backbone.Collection.extend({
 });
 ```
 
-## Storage Provider Interface
+## Storage Adapter Interface
 
-Each storage provider must implement the Backbone.sync function.
+Each storage adapter must implement the Backbone.sync function.
 
 This function is called by the storage proxy with the parameters as provided to the model or
-collection sync method, which is overridden.
+collection sync method, which is storage proxy overrides.
 
-## Storage Provider Result Callback
+## Storage Adapter Result Callback
 
-After the sync method of each storage provider has been invoked, a callback is made that must
-be registered for each storage provider when added to the storage proxy. This callback
-takes 4 arguments. The first 3 arguments are those passed to the sync method, with the fourth
-argument being the result of the sync call on the storage provider.
+After the sync method of each storage adapter has been invoked, a callback is made that must
+be registered for each storage adapter when added to the storage proxy. This callback
+takes four arguments. The first three arguments are those passed to the sync method, with
+the fourth argument being the result of the sync call on the storage adapter.
 
-This allows custom handling of the result of each storage provider sync call to each model or
+This allows custom handling of the result of each storage adapter sync call to each model or
 collection as required.
 
 The return value of this callback is used to indicate whether the storage proxy should continue
-with further storage provider invocations.
+with further storage adapter invocations.
 
-If the callback returns true, the invocation of further storage providers will continue. All
-other return status will suspend further storage provider invocation.
+If the callback returns true, the invocation of further storage adapters will continue. All
+other return status will suspend further storage adapter invocation.
 
 ## License
 

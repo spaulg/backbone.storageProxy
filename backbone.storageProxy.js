@@ -24,17 +24,17 @@
     };
 
     /**
-     * Construct a new storage proxy with the storage providers
+     * Construct a new storage proxy with the storage adapters
      * passed.
      *
      * @param modelOrCollection Model or collection to override sync method
-     * @param storageProviders Array of storage providers
+     * @param storageAdapters Array of storage adapters
      * @returns Constructed storage proxy
      */
-    Backbone.StorageProxy.factory = function(modelOrCollection, storageProviders)
+    Backbone.StorageProxy.factory = function(modelOrCollection, storageAdapters)
     {
         Backbone.StorageProxy._overrideSync(modelOrCollection);
-        return Backbone.StorageProxy().setStorageProviders(storageProviders);
+        return Backbone.StorageProxy().setStorageAdapters(storageAdapters);
     };
 
     /**
@@ -58,15 +58,15 @@
                     'or is not of type Backbone.StorageProxy.');
             }
 
-            // Call all storage providers attached to the storage proxy
+            // Call all storage adapters attached to the storage proxy
             // and notify the callbacks with the appropriate responses
-            var storageBackEnds = storageProxy.getStorageBackEnds();
-            for(var i = 0; i < storageBackEnds.length; i++) {
+            var storageAdapters = storageProxy.getStorageAdapters();
+            for(var i = 0; i < storageAdapters.length; i++) {
                 var args = _.clone(arguments);
-                args.push(storageBackEnds[i].provider.sync.apply(storageBackEnds[i].provider, arguments));
+                args.push(storageAdapters[i].adapter.sync.apply(storageAdapters[i].adapter, arguments));
 
-                if (storageBackEnds[i].callback.apply(model, args) !== true) {
-                    // Short circuit any further storage provider execution
+                if (storageAdapters[i].callback.apply(model, args) !== true) {
+                    // Short circuit any further storage adapter execution
                     break;
                 }
             }
@@ -75,56 +75,56 @@
 
     _.extend(Backbone.StorageProxy.prototype, {
         /**
-         * List of storage providers to forward sync calls to.
+         * List of storage adapters to forward sync calls to.
          */
-        _storageProviders: [],
+        _storageAdapters: [],
 
         /**
-         * Sets all the list of storage providers to proxy to
+         * Sets all the list of storage adapters to proxy to
          * to the list provided.
          *
-         * @param storageBackEnds Array of storage providers
+         * @param storageAdapters Array of storage adapters
          */
-        setStorageProviders: function(storageBackEnds) {
-            if (storageBackEnds == null) {
+        setStorageAdapters: function(storageAdapters) {
+            if (storageAdapters == null) {
                 this.reset();
             } else {
-                // Validate storage provider array
-                for (var i = 0; i < storageBackEnds.length; i++) {
-                    if (storageBackEnds[i].provider == null) {
-                        throw new TypeError('Storage provider at position ' + i + ' not defined.');
-                    } else if (storageBackEnds[i].callback == null) {
-                        throw new TypeError('Callback for storage provider at position ' + i + ' not defined.');
+                // Validate storage adapter array
+                for (var i = 0; i < storageAdapters.length; i++) {
+                    if (storageAdapters[i].adapter == null) {
+                        throw new TypeError('Storage adapter at position ' + i + ' not defined.');
+                    } else if (storageAdapters[i].callback == null) {
+                        throw new TypeError('Callback for storage adapter at position ' + i + ' not defined.');
                     }
                 }
 
-                this._storageProviders = storageBackEnds;
+                this._storageAdapters = storageAdapters;
             }
         },
 
         /**
-         * Add a storage back end to the proxy.
+         * Add a storage adapter to the proxy.
          *
-         * @param storageProvider Single storage back end
-         * @param callback Callback to execute when storage provider has completed
+         * @param storageAdapter Single storage adapter
+         * @param callback Callback to execute when storage adapter has completed
          */
-        addStorageProvider: function(storageProvider, callback) {
-            if (storageProvider == null) {
-                throw new TypeError('Storage provider not defined.');
+        addStorageAdapter: function(storageAdapter, callback) {
+            if (storageAdapter == null) {
+                throw new TypeError('Storage adapter not defined.');
             } else if (callback == null) {
-                throw new TypeError('Callback not provided.');
+                throw new TypeError('Storage adapter callback not provided.');
             }
 
-            this._storageProviders.push({provider: storageProvider, callback: callback});
+            this._storageAdapters.push({adapter: storageAdapter, callback: callback});
         },
 
         /**
-         * Get array of storage providers.
+         * Get array of storage adapters.
          *
-         * @returns Array of storage providers
+         * @returns Array of storage adapters
          */
-        getStorageProviders: function() {
-            return this._storageProviders;
+        getStorageAdapters: function() {
+            return this._storageAdapters;
         }
     });
 })();
