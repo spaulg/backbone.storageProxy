@@ -11,16 +11,19 @@ Include the storage proxy once backbone.js has been loaded
 <script src="backbone.js"></script>
 <script src="backbone.storageProxy.js"></script>
 ```
-Register the storage proxy into each model and collection that requires it.
+Register the storage proxy into each model and collection that requires it
+using the initialize function. The object property used must be 'storageProxy'.
 
 ```javascript
 var model = Backbone.Model.extend({
-    storageProxy: Backbone.StorageProxy.factory(this,
-        [{adapter: new Backbone.MyStorageAdapter(),
-            callback: myStorageAdapterCallback},
-        {adapter: new Backbone.MyOtherStorageAdapter(),
-            callback: myOtherStorageAdapterCallback}]
-    ),
+    initialize: function() {
+        this.storageProxy = Backbone.StorageProxy.factory(this,
+            [{adapter: new Backbone.MyStorageAdapter(),
+                callback: myStorageAdapterCallback},
+            {adapter: new Backbone.MyOtherStorageAdapter(),
+                callback: myOtherStorageAdapterCallback}]
+            )
+    }
 
     myStorageAdapterCallback: function(method, model, options, result) {
 
@@ -39,12 +42,14 @@ var model = Backbone.Model.extend({
 });
 
 var collection = Backbone.Collection.extend({
-    storageProxy: Backbone.StorageProxy.factory(this,
-        [{adapter: new Backbone.MyStorageAdapter(),
-            callback: myStorageAdapterCallback},
-        {adapter: new Backbone.MyOtherStorageAdapter(),
-            callback: myOtherStorageAdapterCallback}]
-    ),
+    initialize: function() {
+        this.storageProxy = Backbone.StorageProxy.factory(this,
+            [{adapter: new Backbone.MyStorageAdapter(),
+                callback: myStorageAdapterCallback},
+            {adapter: new Backbone.MyOtherStorageAdapter(),
+                callback: myOtherStorageAdapterCallback}]
+            )
+    }
 
     myStorageAdapterCallback: function(method, model, options, result) {
 
