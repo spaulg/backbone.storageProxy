@@ -69,10 +69,11 @@ var collection = Backbone.Collection.extend({
 
 ## Storage Adapter Interface
 
-Each storage adapter must implement the Backbone.sync function.
+Each storage adapter must implement the sync function, matching the same function signature
+as Backbone.sync.
 
 This function is called by the storage proxy with the parameters as provided to the model or
-collection sync method, which is storage proxy overrides.
+collection sync method, which the storage proxy overrides.
 
 ## Storage Adapter Result Callback
 
