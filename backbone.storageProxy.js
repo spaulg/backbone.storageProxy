@@ -112,7 +112,7 @@
             if (storageAdapter == null) {
                 throw new TypeError('Storage adapter not defined.');
             } else if (callback == null) {
-                throw new TypeError('Storage adapter callback not provided.');
+                throw new TypeError('Storage adapter callback not defined.');
             }
 
             this._storageAdapters.push({adapter: storageAdapter, callback: callback});
