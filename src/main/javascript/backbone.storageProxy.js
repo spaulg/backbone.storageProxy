@@ -78,7 +78,7 @@
         };
     };
 
-    _.extend(Backbone.StorageProxy.prototype, {
+    Backbone.StorageProxy.prototype = {
         /**
          * List of storage adapters to forward sync calls to.
          */
@@ -137,5 +137,5 @@
         getStorageAdapters: function() {
             return this._storageAdapters;
         }
-    });
+    };
 })();
