@@ -29,31 +29,33 @@
      *
      * @param modelOrCollection Model or collection to override sync method
      * @param storageAdapters Array of storage adapters
-     * @returns Constructed storage proxy
+     * @returns {Backbone.StorageProxy} Constructed storage proxy
      */
     Backbone.StorageProxy.factory = function(modelOrCollection, storageAdapters)
     {
-        Backbone.StorageProxy._overrideSync(modelOrCollection);
-        return Backbone.StorageProxy().setStorageAdapters(storageAdapters);
+        Backbone.StorageProxy.overrideSync(modelOrCollection);
+        return new Backbone.StorageProxy().setStorageAdapters(storageAdapters);
     };
 
     /**
      * Override the sync method of the model or collection.
      *
      * @param modelOrCollection Model or collection object
-     * @private
      */
-    Backbone.StorageProxy._overrideSync = function(modelOrCollection)
+    Backbone.StorageProxy.overrideSync = function(modelOrCollection)
     {
         // Override model or collection sync method
         modelOrCollection.backboneSync = modelOrCollection.sync;
         modelOrCollection.sync = function(method, model, options) {
             // Get storage proxy
-            var storageProxy = model.storageProxy || model.collection.storageProxy;
+            var storageProxy;
 
-            // If no storage proxy exists, throw an exception as it must have been removed
-            // inappropriately which will likely result in unanticipated results when syncing.
-            if (storageProxy == null || !storageProxy instanceof Backbone.StorageProxy) {
+            if (model.storageProxy && model.storageProxy instanceof Backbone.StorageProxy) {
+                storageProxy = model.storageProxy;
+            } else if (model.collection && model.collection.storageProxy &&
+                model.collection.storageProx instanceof Backbone.StorageProxy) {
+                storageProxy = model.collection.storageProxy;
+            } else {
                 throw new TypeError('Storage proxy not found or removed from model or collection, ' +
                     'or is not of type Backbone.StorageProxy.');
             }
@@ -62,7 +64,10 @@
             // and notify the callbacks with the appropriate responses
             var storageAdapters = storageProxy.getStorageAdapters();
             for(var i = 0; i < storageAdapters.length; i++) {
-                var args = _.clone(arguments);
+                var args = [];
+                for (var x = 0; x < arguments.length; x++) {
+                    args.push(arguments[x]);
+                }
                 args.push(storageAdapters[i].adapter.sync.apply(storageAdapters[i].adapter, arguments));
 
                 if (storageAdapters[i].callback.apply(model, args) !== true) {
@@ -84,6 +89,7 @@
          * to the list provided.
          *
          * @param storageAdapters Array of storage adapters
+         * @return {Backbone.StorageProxy} this
          */
         setStorageAdapters: function(storageAdapters) {
             if (storageAdapters == null) {
@@ -94,12 +100,14 @@
                     if (storageAdapters[i].adapter == null) {
                         throw new TypeError('Storage adapter at position ' + i + ' not defined.');
                     } else if (storageAdapters[i].callback == null) {
-                        throw new TypeError('Callback for storage adapter at position ' + i + ' not defined.');
+                        throw new TypeError('Storage adapter callback at position ' + i + ' not defined.');
                     }
                 }
 
                 this._storageAdapters = storageAdapters;
             }
+
+            return this;
         },
 
         /**
@@ -107,6 +115,7 @@
          *
          * @param storageAdapter Single storage adapter
          * @param callback Callback to execute when storage adapter has completed
+         * @return {Backbone.StorageProxy} this
          */
         addStorageAdapter: function(storageAdapter, callback) {
             if (storageAdapter == null) {
@@ -116,6 +125,8 @@
             }
 
             this._storageAdapters.push({adapter: storageAdapter, callback: callback});
+
+            return this;
         },
 
         /**
