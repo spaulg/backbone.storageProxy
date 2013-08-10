@@ -40,7 +40,11 @@ describe('Check Storage Proxy construction', function() {
 
     it('to confirm the correct registration of a valid storage adapter', function() {
         var modelInstance = new Model();
-        expect(modelInstance.storageProxy.setStorageAdapter(new StorageAdapter())).toBe(modelInstance.storageProxy);
+        var storageAdapter = new StorageAdapter();
+        modelInstance.storageProxy.setStorageAdapter(storageAdapter);
+
+        expect(storageAdapter).
+            toBe(modelInstance.storageProxy.getStorageAdapter());
     });
 
     // Confirm validation of setStorageAdapter for missing adapter and/or callback
@@ -56,7 +60,7 @@ describe('Check Storage Proxy construction', function() {
         }
     });
 
-    it('to confirm the correct execution of the sync proxy function without short circuiting', function() {
+    it('to confirm the correct execution of the sync proxy function', function() {
         // Activate storage adapters
         var method = 'create';
         var options = {};

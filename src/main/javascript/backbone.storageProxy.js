@@ -60,13 +60,13 @@
 
             // Call the storage adapter and return the result
             var storageAdapter = storageProxy.getStorageAdapter();
-            return storageAdapter.sync(arguments);
+            return storageAdapter.sync(method, model, options);
         };
     };
 
     Backbone.StorageProxy.prototype = {
         /**
-         * Storage adapters to forward sync calls to.
+         * Storage adapter to forward sync calls to.
          */
         _storageAdapter: null,
 
@@ -74,7 +74,6 @@
          * Set a storage adapter to the proxy.
          *
          * @param storageAdapter Storage adapter
-         * @return {Backbone.StorageProxy} this
          */
         setStorageAdapter: function(storageAdapter) {
             if (storageAdapter == null) {
@@ -82,7 +81,6 @@
             }
 
             this._storageAdapter = storageAdapter;
-            return this;
         },
 
         /**
