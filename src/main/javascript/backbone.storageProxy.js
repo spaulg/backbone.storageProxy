@@ -60,7 +60,7 @@
 
             // Call the storage adapter and return the result
             var storageAdapter = storageProxy.getStorageAdapter();
-            return storageAdapter.sync.apply(storageAdapter, arguments);
+            return storageAdapter.sync(arguments);
         };
     };
 
