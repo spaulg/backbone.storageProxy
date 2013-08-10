@@ -90,6 +90,9 @@ with further storage adapter invocations.
 If the callback returns true, the invocation of further storage adapters will continue. All
 other return status will suspend further storage adapter invocation.
 
+The callback will be invoked as a method on the model of collection. I.e. 'this' will be
+either the model or collection.
+
 ## License
 
 Copyright 2013 Simon Paulger <spaulger@codezen.co.uk>
