@@ -34,7 +34,20 @@
     Backbone.StorageProxy.factory = function(modelOrCollection, storageAdapters)
     {
         Backbone.StorageProxy.overrideSync(modelOrCollection);
-        return new Backbone.StorageProxy().setStorageAdapters(storageAdapters);
+        var storageProxy = new Backbone.StorageProxy().setStorageAdapters(storageAdapters);
+
+        // Register event handler to "add" event for collection
+        // to override sync method for each model added to the collection.
+        // Note that any potential storageProxy instance created within the
+        // model is overwritten.
+        if (modelOrCollection instanceof Backbone.Collection) {
+            modelOrCollection.on('add', function(model, collection, options) {
+                model.storageProxy = this;
+                Backbone.StorageProxy.overrideSync(model);
+            }, storageProxy);
+        }
+
+        return storageProxy;
     };
 
     /**
@@ -144,13 +157,13 @@
      *
      * @constructor
      */
-    Backbone.RestAdapter = function() {
+    Backbone.RestStorage = function() {
 
     };
 
-    Backbone.RestAdapter.prototype = {
+    Backbone.RestStorage.prototype = {
         /**
-         * Forward sync calls to the model or collections original
+         * Forward sync calls to the models original
          * sync method and return results
          *
          * @param method
