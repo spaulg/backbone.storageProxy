@@ -5,6 +5,9 @@ which the proxy has been applied to a storage adapter. This is done by overridin
 method to proxy any request. If the proxy is applied to a collection, each model added
 to the collection will also have its sync method overridden.
 
+The plugin does not override the standard Backbone.sync method. This ensures multiple 
+storage adapters can coexist without having to worry about adapter compatibility.
+
 ## Usage
 
 Load the storage proxy after backbone.js has been loaded.
