@@ -21,7 +21,7 @@
     Backbone.StorageProxy = function(modelOrCollection, storageAdapter)
     {
         this.setStorageAdapter(storageAdapter);
-        Backbone.StorageProxy.overrideSync(modelOrCollection);
+        this._overrideSync(modelOrCollection);
 
         // Register event handler to "add" event for collection
         // to override sync method for each model added to the collection.
@@ -29,39 +29,25 @@
         // model is overwritten.
         if (modelOrCollection instanceof Backbone.Collection) {
             modelOrCollection.on('add', function(model) {
-                model.storageProxy = this;
-                Backbone.StorageProxy.overrideSync(model);
+                if (model.setStorageProxy) {
+                    model.setStorageProxy(this);
+                } else {
+                    model.storageProxy = this;
+                }
+
+                this._overrideSync(model);
+            }, this);
+
+            modelOrCollection.on('remove', function(model) {
+                if (model.setStorageProxy) {
+                    model.setStorageProxy(null);
+                } else {
+                    delete model.storageProxy;
+                }
+
+                this._restoreSync(model);
             }, this);
         }
-    };
-
-    /**
-     * Override the sync method of the model or collection.
-     *
-     * @param modelOrCollection Model or collection object
-     */
-    Backbone.StorageProxy.overrideSync = function(modelOrCollection)
-    {
-        // Override model or collection sync method
-        modelOrCollection.backboneSync = modelOrCollection.sync;
-        modelOrCollection.sync = function(method, model, options) {
-            // Get storage proxy
-            var storageProxy;
-
-            if (model.storageProxy && model.storageProxy instanceof Backbone.StorageProxy) {
-                storageProxy = model.storageProxy;
-            } else if (model.collection && model.collection.storageProxy &&
-                model.collection.storageProxy instanceof Backbone.StorageProxy) {
-                storageProxy = model.collection.storageProxy;
-            } else {
-                throw new TypeError('Storage proxy not found or removed from model or collection, ' +
-                    'or is not of type Backbone.StorageProxy.');
-            }
-
-            // Call the storage adapter and return the result
-            var storageAdapter = storageProxy.getStorageAdapter();
-            return storageAdapter.sync(method, model, options);
-        };
     };
 
     Backbone.StorageProxy.prototype = {
@@ -69,6 +55,53 @@
          * Storage adapter to forward sync calls to.
          */
         _storageAdapter: null,
+
+        /**
+         * Override the sync method of the model or collection.
+         *
+         * @param modelOrCollection Model or collection object
+         */
+        _overrideSync: function(modelOrCollection)
+        {
+            // Override model or collection sync method
+            modelOrCollection.backboneSync = modelOrCollection.sync;
+            modelOrCollection.sync = function(method, model, options) {
+                // Get storage proxy
+                var storageProxy;
+
+                if (model.getStorageProxy && model.getStorageProxy() instanceof Backbone.StorageProxy) {
+                    storageProxy = model.getStorageProxy();
+                } else if (model.storageProxy && model.storageProxy instanceof Backbone.StorageProxy) {
+                    storageProxy = model.storageProxy;
+                } else if (model.collection && model.collection.getStorageProxy &&
+                    model.collection.getStorageProxy() instanceof Backbone.StorageProxy) {
+                    storageProxy = model.collection.getStorageProxy();
+                } else if (model.collection && model.collection.storageProxy &&
+                    model.collection.storageProxy instanceof Backbone.StorageProxy) {
+                    storageProxy = model.collection.storageProxy;
+                } else {
+                    throw new TypeError('Storage proxy not found or removed from model or collection, ' +
+                        'or is not of type Backbone.StorageProxy.');
+                }
+
+                // Call the storage adapter and return the result
+                var storageAdapter = storageProxy.getStorageAdapter();
+                return storageAdapter.sync(method, model, options);
+            };
+        },
+
+        /**
+         * Restore the original sync method of the model
+         *
+         * @param model Model of sync method to restore
+         */
+        _restoreSync: function(model)
+        {
+            if (model.backboneSync) {
+                model.sync = model.backboneSync;
+                delete model.backboneSync;
+            }
+        },
 
         /**
          * Set a storage adapter to the proxy.

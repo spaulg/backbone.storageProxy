@@ -29,6 +29,22 @@ describe('Check Storage Proxy construction', function() {
         }
     });
 
+    var Model2 = Backbone.Model.extend({
+        storageProxyObject: null,
+
+        initialize: function() {
+            this.storageProxyObject = new Backbone.StorageProxy(this, new StorageAdapter());
+        },
+
+        setStorageProxy: function(proxy) {
+            this.storageProxyObject = proxy;
+        },
+
+        getStorageProxy: function() {
+            return this.storageProxyObject;
+        }
+    });
+
 
 
 
@@ -65,6 +81,17 @@ describe('Check Storage Proxy construction', function() {
         var method = 'create';
         var options = {};
         var modelInstance = new Model();
+        var result = modelInstance.sync(method, modelInstance, options);
+
+        expect(result[0]).toBe(method);
+        expect(result[1]).toBe(modelInstance);
+        expect(result[2]).toBe(options);
+    });
+
+    it('to confirm the correct retrieval of a proxy using the model setter/getter methods', function() {
+        var method = 'create';
+        var options = {};
+        var modelInstance = new Model2();
         var result = modelInstance.sync(method, modelInstance, options);
 
         expect(result[0]).toBe(method);
