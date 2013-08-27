@@ -18,7 +18,9 @@ Load the storage proxy after backbone.js has been loaded.
 ```
 
 Register the storage proxy into each model and collection that requires it
-using the backbone initialize function. The object property used must be 'storageProxy'.
+using the backbone initialize function. The object property used must be 'storageProxy', or
+alternatively, a getter/setter method combo called getStorageProxy and setStorageProxy can
+be used.
 
 ```javascript
 var model = Backbone.Model.extend({
